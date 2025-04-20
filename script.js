@@ -6,7 +6,6 @@ let fighting;
 let monsterHealth;
 let inventory = ["stick"];
 
-// Corrected button selection
 const button1 = document.getElementById("button1");
 const button2 = document.getElementById("button2");
 const button3 = document.getElementById("button3");
@@ -76,24 +75,24 @@ const locations = [
   }
 ];
 
-// Initialize buttons correctly
-button1.onclick = function() { locations[0].button_functions[0](); };
-button2.onclick = function() { locations[0].button_functions[1](); };
-button3.onclick = function() { locations[0].button_functions[2](); };
+button1.onclick = () => locations[0].button_functions[0]();
+button2.onclick = () => locations[0].button_functions[1]();
+button3.onclick = () => locations[0].button_functions[2]();
 
 function update(location) {
   monsterStats.style.display = "none";
   button1.innerText = location.button_text[0];
   button2.innerText = location.button_text[1];
   button3.innerText = location.button_text[2];
-  button1.onclick = function() { location.button_functions[0](); };
-  button2.onclick = function() { location.button_functions[1](); };
-  button3.onclick = function() { location.button_functions[2](); };
+  button1.onclick = () => location.button_functions[0]();
+  button2.onclick = () => location.button_functions[1]();
+  button3.onclick = () => location.button_functions[2]();
   text.innerText = location.text;
 }
 
 function goTown() {
   update(locations[0]);
+  document.getElementById("dragon").style.display = "none";
 }
 
 function goStore() {
@@ -120,16 +119,15 @@ function buyWeapon() {
     if (gold >= 30) {
       gold -= 30;
       currentWeapon++;
-      goldText.innerText = gold;
       let newWeapon = weapons[currentWeapon].name;
-      text.innerText = "You now have a " + newWeapon + ".";
       inventory.push(newWeapon);
-      text.innerText += " In your inventory you have: " + inventory;
+      text.innerText = "You now have a " + newWeapon + ". In your inventory you have: " + inventory;
+      goldText.innerText = gold;
     } else {
       text.innerText = "You do not have enough gold to buy a weapon.";
     }
   } else {
-    text.innerHTML = "You already have the most powerful weapon!";
+    text.innerText = "You already have the most powerful weapon!";
     button2.innerText = "Sell weapon for 15 gold";
     button2.onclick = sellWeapon;
   }
@@ -138,9 +136,9 @@ function buyWeapon() {
 function sellWeapon() {
   if (inventory.length > 1) {
     gold += 15;
+    inventory.shift();
     goldText.innerText = gold;
-    let currentWeapon = inventory.shift();
-    text.innerText += " In your inventory you have: " + inventory;
+    text.innerText = "You sold a weapon. In your inventory: " + inventory;
   } else {
     text.innerText = "Don't sell your only weapon!";
   }
@@ -167,23 +165,28 @@ function goFight() {
   monsterStats.style.display = "block";
   monsterNameText.innerText = monsters[fighting].name;
   monsterHealthText.innerText = monsterHealth;
+
+  const dragon = document.getElementById("dragon");
+  dragon.style.display = fighting === 2 ? "block" : "none";
 }
 
 function attack() {
-  text.innerText = "The " + monsters[fighting].name + " attacks.";
-  text.innerText += " You attack it with your " + weapons[currentWeapon].name + ".";
+  if (fighting === 2) {
+    const dragonImg = document.getElementById("dragonImage");
+    dragonImg.classList.add("attack");
+    setTimeout(() => dragonImg.classList.remove("attack"), 400);
+  }
+
+  text.innerText = `The ${monsters[fighting].name} attacks. You attack it with your ${weapons[currentWeapon].name}.`;
   health -= monsters[fighting].level;
   monsterHealth -= weapons[currentWeapon].power + Math.floor(Math.random() * xp) + 1;
   healthText.innerText = health;
   monsterHealthText.innerText = monsterHealth;
+
   if (health <= 0) {
     lose();
   } else if (monsterHealth <= 0) {
-    if (fighting === 2) {
-      winGame();
-    } else {
-      defeatMonster();
-    }
+    fighting === 2 ? winGame() : defeatMonster();
   }
 }
 
